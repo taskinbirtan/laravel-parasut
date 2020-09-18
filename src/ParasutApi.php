@@ -44,7 +44,7 @@ class ParasutApi
 
     }
 
-    public function login()
+    public function login($username, $password)
     {
 
     }
