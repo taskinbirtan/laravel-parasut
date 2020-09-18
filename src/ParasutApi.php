@@ -7,8 +7,6 @@ use GuzzleHttp\Client;
 class ParasutApi
 {
 
-    use Reservation;
-
     protected $base_url = 'https://api.parasut.com';
     protected $version = 'v4';
 
@@ -46,6 +44,6 @@ class ParasutApi
 
     public function login($username, $password)
     {
-
+        return 'hello';
     }
 }
