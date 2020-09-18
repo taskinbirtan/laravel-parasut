@@ -1,0 +1,21 @@
+{
+    "name": "meta/laravel-parasut",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Birtan Taskin",
+            "email": "taskinbirtan@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TaskinBirtan\\LaravelParasut\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TaskinBirtan\\LaravelParasut\\Tests\\": "tests/"
+        }
+    },
+    "require": {}
+}
