@@ -58,7 +58,12 @@ trait Invoice
                 $this->invoiceRelationship['contact']['data'] = [];
                 $this->invoiceRelationship['contact']['data']['id'] = $id;
                 $this->invoiceRelationship['contact']['data']['type'] = "contacts";
-//                dd($this->invoiceRelationship);
+                break;
+            case 'supplier':
+                $this->invoiceRelationship['supplier'] = [];
+                $this->invoiceRelationship['supplier']['data'] = [];
+                $this->invoiceRelationship['supplier']['data']['id'] = $id;
+                $this->invoiceRelationship['supplier']['data']['type'] = "contacts";
                 break;
             case 'details':
                 $arr = [];
@@ -97,7 +102,7 @@ trait Invoice
         $data = [
             'data' => [
                 'id' => $id,
-                "type"=> "products"
+                "type" => "products"
             ]
         ];
         $this->invoiceProductData = $data;

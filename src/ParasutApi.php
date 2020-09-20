@@ -157,6 +157,87 @@ class ParasutApi
         }
         return (json_decode($response));
     }
+    public function createSaleInvoice()
+    {
+        $param = json_encode(
+            [
+                'data' =>
+                    [
+                        "type" => 'purchase_bills',
+                        "attributes" => $this->getInvoiceAttributes(),
+                        "relationships" => $this->getInvoiceRelationship()
+                    ]
+            ]
+        );
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/purchase_bills#basic",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => ($param),
+
+            CURLOPT_HTTPHEADER => [
+                "authorization: Bearer " . $this->parasut_api_token->access_token,
+                "content-type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return json_encode(['isError' => true]);
+        } else {
+
+        }
+        return (json_decode($response));
+    }
+
+    public function createPurchaseBill()
+    {
+        $param = json_encode(
+            [
+                'data' =>
+                    [
+                        "type" => 'purchase_bills',
+                        "attributes" => $this->getInvoiceAttributes(),
+                        "relationships" => $this->getInvoiceRelationship()
+                    ]
+            ]
+        );
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/purchase_bills#basic",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => ($param),
+
+            CURLOPT_HTTPHEADER => [
+                "authorization: Bearer " . $this->parasut_api_token->access_token,
+                "content-type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
+            return json_encode(['isError' => true]);
+        } else {
+
+        }
+        return (json_decode($response));
+    }
 
     public function createInvoicePayment($invoice_id)
     {
