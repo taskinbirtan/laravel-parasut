@@ -3,6 +3,7 @@
 namespace TaskinBirtan\LaravelParasut;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Cache;
 
 class ParasutApi
 {
@@ -20,6 +21,7 @@ class ParasutApi
 
     protected $http_client;
 
+    protected $api_access_token;
     protected $response;
 
 
@@ -27,7 +29,7 @@ class ParasutApi
         'Content-Type' => "application/x-www-form-urlencoded"
     ];
 
-    public function __construct()
+    public function __construct($username, $password)
     {
         $this->client_id = env('PARASUT_CLIENT_ID');
         $this->client_secret = env('PARASUT_CLIENT_SECRET');
@@ -38,31 +40,37 @@ class ParasutApi
             throw new \Exception("Paraşüt API sini kullanabilmeniz için env içerisinde zorunlu olarak belirtilmesi gerekli
             olan PARASUT_CLIENT_ID* PARASUT_CLIENT_SECRET* PARASUT_COMPANY_ID* PARASUT_CLIENT_ID* PARASUT_REDIRECT_URI değerlerini belirtiniz (* olanlar zorunludur).");
         }
+
+
         $this->http_client = new Client([
             'base_uri' => $this->base_url,
-
         ]);
 
+        $parasut_api_token = Cache::get('parasut-api-token', null);
+
+        if(empty($parasut_api_token)) {
+            $this->parasut_api_token = $this->login($username, $password);
+        } else {
+            $this->parasut_api_token = $parasut_api_token;
+        }
     }
 
     public function login($username, $password)
     {
-        $this->response = $this->http_client->request('POST', $this->base_url . '/' . 'oauth/token', [
-            'form_params' => [
-                'grant_type' => 'password',
-                'client_id' => $this->client_id,
-                'client_secret' => $this->client_secret,
-                'username' => $username,
-                'password' => $password,
-                'redirect_uri' => $this->redirect_uri
-            ]
-        ]);
-        /*TODO cache kullanilarak access_token kayit edilmelidir, refresh token de ayni sekilde ..*/
-        if ($this->response->getStatusCode() == 200) {
-            return $this->response->getBody();
-        } else {
-            return json_encode(['isError' => true]);
-        }
+        $parasutApiToken = Cache::remember('parasut-api-token', 6735, function () use($username, $password) {
+            $this->response = $this->http_client->request('POST', $this->base_url . '/' . 'oauth/token', [
+                'form_params' => [
+                    'grant_type' => 'password',
+                    'client_id' => $this->client_id,
+                    'client_secret' => $this->client_secret,
+                    'username' => $username,
+                    'password' => $password,
+                    'redirect_uri' => $this->redirect_uri
+                ]
+            ]);
+            return json_decode($this->response->getBody());
+        });
+        return $parasutApiToken;
     }
 
 
@@ -72,7 +80,7 @@ class ParasutApi
         $form_params = $this->getCustomerModel();
         $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'contacts', [
             'headers' => [
-                'Authorization' => 'Bearer 2f267dba043c9be0418a3af1419655576118b38b168e9185f6a33fee7b44a675',
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ],
             'form_params' => $form_params
 
@@ -90,8 +98,7 @@ class ParasutApi
     {
         $this->response = $this->http_client->request('POST', $this->version . '/' . $this->company_id . '/' . 'contacts', [
             'headers' => [
-                'Authorization' => 'Bearer 2f267dba043c9be0418a3af1419655576118b38b168e9185f6a33fee7b44a675',
-
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ],
             'form_params' => [
                 'data' => [
@@ -112,27 +119,44 @@ class ParasutApi
     {
 
 
-        $this->response = $this->http_client->request('POST', $this->version . '/' . $this->company_id . '/' . 'sales_invoices', [
-            'headers' => [
-                'Authorization' => 'Bearer 2f267dba043c9be0418a3af1419655576118b38b168e9185f6a33fee7b44a675',
-                'Content-type' => 'multipart/form-data'
-            ],
-            'form_params' => [
+        $param = json_encode(
+            [
                 'data' =>
                     [
                         "type" => 'sales_invoices',
                         "attributes" => $this->getInvoiceAttributes(),
                         "relationships" => $this->getInvoiceRelationship()
                     ]
-
             ]
+        );
+        $curl = curl_init();
+
+        curl_setopt_array($curl, [
+            CURLOPT_URL => "https://api.parasut.com/v4/293060/sales_invoices?=",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => ($param),
+
+            CURLOPT_HTTPHEADER => [
+                "authorization: Bearer " . $this->parasut_api_token->access_token,
+                "content-type: application/json"
+            ],
         ]);
 
-        if ($this->response->getStatusCode() == 201) {
-            return $this->response->getBody();
-        } else {
+        $response = curl_exec($curl);
+        $err = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($err) {
             return json_encode(['isError' => true]);
+        } else {
+
         }
+        return (json_decode($response));
+
     }
 
     public function getProducts()
@@ -140,7 +164,7 @@ class ParasutApi
         $form_params = $this->getProductQuery();
         $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'products', [
             'headers' => [
-                'Authorization' => 'Bearer 2f267dba043c9be0418a3af1419655576118b38b168e9185f6a33fee7b44a675',
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ],
             'form_params' => $form_params
         ]);
@@ -153,7 +177,7 @@ class ParasutApi
         $data = $this->getProductQueryData();
         $this->response = $this->http_client->request('POST', $this->version . '/' . $this->company_id . '/' . 'products', [
             'headers' => [
-                'Authorization' => 'Bearer 2f267dba043c9be0418a3af1419655576118b38b168e9185f6a33fee7b44a675',
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ],
             'form_params' => [
                 'data' => $data

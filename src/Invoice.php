@@ -11,6 +11,8 @@ trait Invoice
     protected $invoiceAttributes = [];
     protected $invoiceRelationship = [];
 
+    protected $invoiceProductData = [];
+
     protected $itemTypes = [
         "invoice",
         "estimate",
@@ -59,39 +61,48 @@ trait Invoice
 //                dd($this->invoiceRelationship);
                 break;
             case 'details':
+                $arr = [];
+                $arr['attributes'] = [];
+                $arr['attributes']['quantity'] = $data['quantity'];
+                $arr['attributes']['unit_price'] = $data['unit_price'];
+                $arr['attributes']['vat_rate'] = $data['vat_rate'];
 
-                $arr = new \stdClass();
-                $arr->attributes = new \stdClass();
-                $arr->attributes->quantity = $data['quantity'];
-                $arr->attributes->unit_price = $data['unit_price'];
-                $arr->attributes->vat_rate = $data['vat_rate'];
+                $this->invoiceRelationship['details'] = [];
 
+                $this->invoiceRelationship['details']['data'] = [];
 
-                $this->invoiceRelationship['details'] = [
+                $this->invoiceRelationship['details']['data'][] = [
+                    'type' => 'sales_invoice_details',
+                    'attributes' => [
+                        'quantity' => $data['quantity'],
+                        'unit_price' => $data['unit_price'],
+                        'vat_rate' => $data['vat_rate']
+                    ],
 
-                        'data' => [
-                            [
-
-                                'type' => 'sales_invoice_details',
-                                'attributes' => [
-                                    'quantity' => 1,
-                                    'unit_price' => 100,
-                                    'vat_rate' => 0
-                                ],
-
-                            ]
-                        ]
-
+                    'relationships' => [
+                        'product' => $this->invoiceProductData
+                    ]
 
                 ];
-                //$this->invoiceRelationship['details'] = json_encode($this->invoiceRelationship['details']);
-                //dd($this->invoiceRelationship);
 
                 break;
         }
 
         return $this;
 
+    }
+
+    public function setInvoiceProduct($id)
+    {
+        $data = [
+            'data' => [
+                'id' => $id,
+                "type"=> "products"
+            ]
+        ];
+        $this->invoiceProductData = $data;
+
+        return $this;
     }
 
     public function getInvoiceAttributes()
