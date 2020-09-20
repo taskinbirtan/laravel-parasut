@@ -10,6 +10,7 @@ class ParasutApi
     use Customer;
     use Invoice;
     use Product;
+    use InvoicePayment;
 
     protected $base_url = 'https://api.parasut.com';
     protected $version = 'v4';
@@ -57,7 +58,8 @@ class ParasutApi
 
     public function login($username, $password)
     {
-        $parasutApiToken = Cache::remember('parasut-api-token', 6735, function () use($username, $password) {
+        $parasutApiToken = Cache::remember('parasut-api-token', 6500, function () use($username, $password) {
+
             $this->response = $this->http_client->request('POST', $this->base_url . '/' . 'oauth/token', [
                 'form_params' => [
                     'grant_type' => 'password',
@@ -117,8 +119,6 @@ class ParasutApi
 
     public function createInvoice()
     {
-
-
         $param = json_encode(
             [
                 'data' =>
@@ -156,7 +156,27 @@ class ParasutApi
 
         }
         return (json_decode($response));
+    }
 
+    public function createInvoicePayment($invoice_id)
+    {
+        $this->response = $this->http_client->request('POST', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $invoice_id . '/' . 'payments', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+            ],
+            'form_params' => [
+                'data' => [
+                    "type" => 'payments',
+                    "attributes" => $this->getInvoicePaymentAttributes()
+                ]
+            ]
+        ]);
+
+        if ($this->response->getStatusCode() == 201) {
+            return $this->response->getBody();
+        } else {
+            return json_encode(['isError' => true]);
+        }
     }
 
     public function getProducts()
@@ -169,7 +189,6 @@ class ParasutApi
             'form_params' => $form_params
         ]);
         return $this->response->getBody();
-
     }
 
     public function createProduct()
@@ -185,5 +204,4 @@ class ParasutApi
         ]);
         return $this->response->getBody();
     }
-
 }
