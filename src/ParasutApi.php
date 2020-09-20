@@ -132,7 +132,7 @@ class ParasutApi
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.parasut.com/v4/293060/sales_invoices?=",
+            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/sales_invoices?=",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
