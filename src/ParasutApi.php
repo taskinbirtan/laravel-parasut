@@ -11,6 +11,7 @@ class ParasutApi
     use Invoice;
     use Product;
     use InvoicePayment;
+    use Category;
 
     protected $base_url = 'https://api.parasut.com';
     protected $version = 'v4';
@@ -47,13 +48,15 @@ class ParasutApi
             'base_uri' => $this->base_url,
         ]);
 
-        $parasut_api_token = Cache::get('parasut-api-token', null);
+//        $parasut_api_token = Cache::get('parasut-api-token', null);
+//
+//        if(empty($parasut_api_token)) {
+//            $this->parasut_api_token = $this->login($username, $password);
+//        } else {
+//            $this->parasut_api_token = $parasut_api_token;
+//        }
 
-        if(empty($parasut_api_token)) {
-            $this->parasut_api_token = $this->login($username, $password);
-        } else {
-            $this->parasut_api_token = $parasut_api_token;
-        }
+        $this->parasut_api_token = $this->login($username, $password);
     }
 
     public function login($username, $password)
@@ -73,6 +76,50 @@ class ParasutApi
             return json_decode($this->response->getBody());
         });
         return $parasutApiToken;
+    }
+
+    public function getCategories($page = null)
+    {
+        if(empty($page)) {
+            $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'item_categories', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+                ]
+            ]);
+        } else {
+            $this->response = $this->http_client->request('GET', $page, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+                ]
+            ]);
+        }
+
+        if ($this->response->getStatusCode() == 200) {
+            return $this->response->getBody();
+        } else {
+            return json_encode(['isError' => true]);
+        }
+
+    }
+
+
+    public function getSingleInvoice()
+    {
+        //dd($this->getInvoiceQueryParameters());
+        $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+            ],
+            'form_params' => $this->getInvoiceQueryParameters()
+
+        ]);
+
+
+        if ($this->response->getStatusCode() == 200) {
+            return $this->response->getBody();
+        } else {
+            return json_encode(['isError' => true]);
+        }
     }
 
 

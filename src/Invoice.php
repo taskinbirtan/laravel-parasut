@@ -12,6 +12,8 @@ trait Invoice
     protected $invoiceRelationship = [];
 
     protected $invoiceProductData = [];
+    protected $invoiceQueryParameter = [];
+
 
     protected $itemTypes = [
         "invoice",
@@ -38,6 +40,16 @@ trait Invoice
         "shipment_included" => "boolean"
 
     ];
+
+    public function addInvoiceQueryParameter($name, $value)
+    {
+        $this->invoiceQueryParameter[$name] = $value;
+        return $this;
+    }
+    public function getInvoiceQueryParameters()
+    {
+        return $this->invoiceQueryParameter;
+    }
 
     public function getInvoiceModel()
     {
