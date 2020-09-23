@@ -77,6 +77,12 @@ trait Invoice
                 $this->invoiceRelationship['supplier']['data']['id'] = $id;
                 $this->invoiceRelationship['supplier']['data']['type'] = "contacts";
                 break;
+            case 'category':
+                $this->invoiceRelationship['category'] = [];
+                $this->invoiceRelationship['category']['data'] = [];
+                $this->invoiceRelationship['category']['data']['id'] = $id;
+                $this->invoiceRelationship['category']['data']['type'] = "item_categories";
+                break;
             case 'details':
                 $arr = [];
                 $arr['attributes'] = [];

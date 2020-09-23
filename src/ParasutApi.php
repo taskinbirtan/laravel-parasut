@@ -61,7 +61,7 @@ class ParasutApi
 
     public function login($username, $password)
     {
-        $parasutApiToken = Cache::remember('parasut-api-token', 6500, function () use($username, $password) {
+        $parasutApiToken = Cache::remember('parasut-api-token', 6500, function () use ($username, $password) {
 
             $this->response = $this->http_client->request('POST', $this->base_url . '/' . 'oauth/token', [
                 'form_params' => [
@@ -80,17 +80,19 @@ class ParasutApi
 
     public function getCategories($page = null)
     {
-        if(empty($page)) {
+        if (empty($page)) {
             $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'item_categories', [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
-                ]
+                ],
+                'query' => $this->categoryQueryParameter
             ]);
         } else {
             $this->response = $this->http_client->request('GET', $page, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
-                ]
+                ],
+                'query' => $this->categoryQueryParameter
             ]);
         }
 
@@ -179,7 +181,7 @@ class ParasutApi
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/sales_invoices?=",
+            CURLOPT_URL => "https://api.parasut.com/v4/" . $this->company_id . "/sales_invoices?=",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
@@ -204,6 +206,7 @@ class ParasutApi
         }
         return (json_decode($response));
     }
+
     public function createSaleInvoice()
     {
         $param = json_encode(
@@ -219,7 +222,7 @@ class ParasutApi
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/purchase_bills#basic",
+            CURLOPT_URL => "https://api.parasut.com/v4/" . $this->company_id . "/purchase_bills#basic",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
@@ -260,7 +263,7 @@ class ParasutApi
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => "https://api.parasut.com/v4/".$this->company_id."/purchase_bills#basic",
+            CURLOPT_URL => "https://api.parasut.com/v4/" . $this->company_id . "/purchase_bills#basic",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 30,
