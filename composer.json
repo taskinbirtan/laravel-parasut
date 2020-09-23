@@ -1,6 +1,7 @@
 {
     "name": "taskinbirtan/laravel-parasut",
     "type": "project",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "Birtan Taskin",
