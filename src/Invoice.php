@@ -62,6 +62,8 @@ trait Invoice
         return $this;
     }
 
+    /*Some text has been added for tag testing*/
+
     public function setInvoiceRelationship($type, $id = null, $data = null)
     {
         switch ($type) {
