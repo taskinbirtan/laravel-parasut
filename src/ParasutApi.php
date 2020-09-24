@@ -105,15 +105,13 @@ class ParasutApi
     }
 
 
-    public function getSingleInvoice()
+    public function getSingleInvoice($id)
     {
         //dd($this->getInvoiceQueryParameters());
-        $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices', [
+        $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $id, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
-            ],
-            'form_params' => $this->getInvoiceQueryParameters()
-
+            ]
         ]);
 
 
