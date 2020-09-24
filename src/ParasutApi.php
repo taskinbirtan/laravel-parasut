@@ -61,7 +61,7 @@ class ParasutApi
 
     private function renderException(\Exception $e)
     {
-        switch($e->getCode()) {
+        switch ($e->getCode()) {
             case 404:
                 return response(['isError' => true, 'message' => "Can't find"], 404);
                 break;
@@ -111,13 +111,23 @@ class ParasutApi
             return json_encode(['isError' => true]);
         }
     }
+
     public function getSingleInvoice($id)
     {
-        $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $id, [
-            'headers' => [
-                'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
-            ]
-        ]);
+        try {
+            $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $id, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+
+                ],
+                'form_params' => [
+                    'include' => "payments"
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->renderException($e);
+        }
 
         if ($this->response->getStatusCode() == 200) {
             return $this->response->getBody();
@@ -132,9 +142,12 @@ class ParasutApi
             $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'purchase_bills/' . $id, [
                 'headers' => [
                     'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+                ],
+                'form_params' => [
+                    'include' => "payments"
                 ]
             ]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return $this->renderException($e);
         }
 
