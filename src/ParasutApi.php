@@ -59,6 +59,15 @@ class ParasutApi
         $this->parasut_api_token = $this->login($username, $password);
     }
 
+    private function renderException(\Exception $e)
+    {
+        switch($e->getCode()) {
+            case 404:
+                return response(['isError' => true, 'message' => "Can't find"], 404);
+                break;
+        }
+    }
+
     public function login($username, $password)
     {
         $parasutApiToken = Cache::remember('parasut-api-token', 6500, function () use ($username, $password) {
@@ -107,13 +116,31 @@ class ParasutApi
 
     public function getSingleInvoice($id)
     {
-        //dd($this->getInvoiceQueryParameters());
         $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $id, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ]
         ]);
 
+
+        if ($this->response->getStatusCode() == 200) {
+            return $this->response->getBody();
+        } else {
+            return json_encode(['isError' => true]);
+        }
+    }
+
+    public function getSinglePurchaseBill($id)
+    {
+        try {
+            $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'purchase_bills/' . $id, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
+                ]
+            ]);
+        } catch(\Exception $e) {
+            return $this->renderException($e);
+        }
 
         if ($this->response->getStatusCode() == 200) {
             return $this->response->getBody();
