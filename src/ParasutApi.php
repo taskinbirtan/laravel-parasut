@@ -110,10 +110,7 @@ class ParasutApi
         } else {
             return json_encode(['isError' => true]);
         }
-
     }
-
-
     public function getSingleInvoice($id)
     {
         $this->response = $this->http_client->request('GET', $this->version . '/' . $this->company_id . '/' . 'sales_invoices/' . $id, [
@@ -121,7 +118,6 @@ class ParasutApi
                 'Authorization' => 'Bearer ' . $this->parasut_api_token->access_token,
             ]
         ]);
-
 
         if ($this->response->getStatusCode() == 200) {
             return $this->response->getBody();
